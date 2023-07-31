@@ -23,6 +23,6 @@ namespace Models
                 OnPropertyChanged();
             }
         }
-        public ICollection<Product> Products { get; set; } = new ObservableCollection<Product>();
+        public virtual ICollection<Product> Products { get; set; } = new ObservableCollection<Product>();
     }
 }
