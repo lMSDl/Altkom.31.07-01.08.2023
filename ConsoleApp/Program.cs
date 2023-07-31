@@ -15,6 +15,68 @@ var contextOptions = new DbContextOptionsBuilder<Context>()
 var context = new Context(contextOptions);
 context.Database.EnsureDeleted();
 context.Database.EnsureCreated();
+
+
+ChangeTracker(context);
+
+context.ChangeTracker.Clear();
+
+var order = context.Set<Order>().First();
+
+order.DateTime = DateTime.Now;
+context.SaveChanges();
+
+
+var product = context.Set<Product>().First();
+product.Price = 10;
+
+var saved = false;
+do
+{
+    try
+    {
+        context.SaveChanges();
+        saved = true;
+    }
+    catch (DbUpdateConcurrencyException ex)
+    {
+        foreach (var entry in ex.Entries)
+        {
+            //wartości jakie chcemy wprowadzić do bazy
+            var currentValues = entry.CurrentValues;
+            //wartości jakie pobraliśmy z bazy (historyczne)
+            var originalValues = entry.OriginalValues;
+            //wartości jakie aktualnie są w bazie danych
+            var databseValues = entry.GetDatabaseValues();
+
+            switch (entry.Entity)
+            {
+                case Product:
+                    var property = currentValues.Properties.Single(x => x.Name == nameof(Product.Price));
+                    var currentPrice = (float)currentValues[property]!;
+                    var originalPrice = (float)originalValues[property]!;
+                    var databasePrice = (float)databseValues![property]!;
+
+                    currentValues[property] = databasePrice + (currentPrice - originalPrice);
+
+                    break;
+            }
+
+            entry.OriginalValues.SetValues(databseValues);
+        }
+    }
+} while (!saved);
+
+
+
+
+
+
+
+
+
+static void ChangeTracker(Context context)
+{ 
 //context.ChangeTracker.AutoDetectChangesEnabled = false;
 
 var order = new Order();
@@ -162,3 +224,4 @@ foreach (var p in products)
 Console.WriteLine(context.ChangeTracker.DebugView.LongView);
 
 Console.ReadLine();
+}
