@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Models;
 
 namespace DAL
 {
@@ -14,6 +15,19 @@ namespace DAL
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
             modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangedNotifications);
+        }
+
+
+        public override int SaveChanges()
+        {
+            ChangeTracker.Entries<IModifiedDate>()
+                .Where(x => x.State == EntityState.Modified || x.State == EntityState.Added)
+                .Select(x => x.Entity)
+                .ToList()
+                .ForEach(x => x.ModifiedDate = DateTime.Now);
+
+
+            return base.SaveChanges();
         }
     }
 }

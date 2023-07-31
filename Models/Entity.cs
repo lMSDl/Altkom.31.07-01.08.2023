@@ -3,9 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace Models
 {
-    public abstract class Entity : INotifyPropertyChanged
+    public abstract class Entity : INotifyPropertyChanged, IModifiedDate
     {
         public virtual int Id { get; set; }
+
+        public DateTime ModifiedDate {get; set;}
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
