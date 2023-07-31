@@ -3,6 +3,7 @@ using DAL;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using System.Collections.ObjectModel;
+using System.Security.Cryptography.X509Certificates;
 
 var contextOptions = new DbContextOptionsBuilder<Context>()
     .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true")
@@ -29,7 +30,8 @@ order.Products.Add(product);
 Console.WriteLine("Order przed dodaniem do kontekstu: " + context.Entry(order).State);
 Console.WriteLine("Product przed dodaniem do kontekstu: " + context.Entry(product).State);
 
-context.Add(order);
+//context.Add(order);
+context.Attach(order);
 
 Console.WriteLine("Order po dodaniu do kontekstu: " + context.Entry(order).State);
 Console.WriteLine("Product po dodaniu do kontekstu: " + context.Entry(product).State);
@@ -39,8 +41,10 @@ context.SaveChanges();
 Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
 Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
 
+context.Entry(order).State = EntityState.Detached;
 order.DateTime = DateTime.Now;
 context.Entry(order).Property(x => x.DateTime).IsModified = true;
+context.Attach(order);
 
 
 Console.WriteLine("Order po zmianie daty: " + context.Entry(order).State);
@@ -53,6 +57,8 @@ context.Remove(product);
 
 Console.WriteLine("Order po usunięciu produktu: " + context.Entry(order).State);
 Console.WriteLine("Product po usunięciu produktu: " + context.Entry(product).State);
+
+context.Entry(product).State = EntityState.Unchanged;
 
 context.SaveChanges();
 
@@ -124,3 +130,35 @@ context.SaveChanges();
 Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
 Console.WriteLine("-----");
 Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+
+
+context.ChangeTracker.Clear();
+
+
+var products = new List<Product>()
+{
+    new Product() { Name = "P1", Order = new Order { Id = 60, DateTime = DateTime.Now } },
+    new Product() { Name = "P2", Order = new Order { } }
+};
+
+//context.AttachRange(products);
+
+foreach (var p in products)
+{
+    context.ChangeTracker.TrackGraph(p, entityEntry =>
+    {
+        if (entityEntry.Entry.IsKeySet)
+        {
+            entityEntry.Entry.State = EntityState.Modified;
+        }
+        else
+            entityEntry.Entry.State = EntityState.Added;
+
+        entityEntry.Entry.Properties.Where(x => x.Metadata.ClrType == typeof(DateTime)).ToList().ForEach(x => x.IsModified = false);
+    });
+}
+
+Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+Console.ReadLine();
