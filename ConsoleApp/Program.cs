@@ -2,24 +2,25 @@
 using DAL;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using System.Collections.ObjectModel;
 
 var contextOptions = new DbContextOptionsBuilder<Context>()
     .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true")
     //Włączenie śledzenia zmian na podstawie proxy - wymaga specjalnego tworzenia obiektów (context.CreateProxy) i virtualizacji właściwości encji
-    .UseChangeTrackingProxies()
+    //.UseChangeTrackingProxies()
     //.LogTo(Console.WriteLine)
     .Options;
 
 var context = new Context(contextOptions);
 context.Database.EnsureDeleted();
 context.Database.EnsureCreated();
-context.ChangeTracker.AutoDetectChangesEnabled = false;
+//context.ChangeTracker.AutoDetectChangesEnabled = false;
 
-/*var order = new Order();
-var product = new Product() { Name = "Sałata", Price = 15 };*/
+var order = new Order();
+var product = new Product() { Name = "Sałata", Price = 15 };
 
-var order = context.CreateProxy<Order>();
-var product = context.CreateProxy<Product> (x =>  { x.Name = "Sałata"; x.Price = 15; });
+/*var order = context.CreateProxy<Order>();
+var product = context.CreateProxy<Product> (x =>  { x.Name = "Sałata"; x.Price = 15; });*/
 
 
 order.Products.Add(product);
@@ -39,6 +40,8 @@ Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
 Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
 
 order.DateTime = DateTime.Now;
+context.Entry(order).Property(x => x.DateTime).IsModified = true;
+
 
 Console.WriteLine("Order po zmianie daty: " + context.Entry(order).State);
 Console.WriteLine("Order DateTime zmodywikowany? " + context.Entry(order).Property(x => x.DateTime).IsModified);
@@ -56,7 +59,7 @@ context.SaveChanges();
 Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
 Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
 
-/*//wyłączenie automatycznego wykrywania zmian
+//wyłączenie automatycznego wykrywania zmian
 //AutoDetectChanges działa w przypadku wywołania Entries, Local, SaveChanges
 context.ChangeTracker.AutoDetectChangesEnabled = false;
 
@@ -106,9 +109,9 @@ context.ChangeTracker.AutoDetectChangesEnabled = true;
 for (int i = 0; i < 3; i++)
 {
     order = new Order() { DateTime = DateTime.Now.AddMinutes(-i * 64) };
-    order.Products = Enumerable.Range(1, new Random(i).Next(2, 10))
+    order.Products = new ObservableCollection<Product>( Enumerable.Range(1, new Random(i).Next(2, 10))
         .Select(x => new Product { Name = x.ToString(), Price = x * 0.32f })
-        .ToList();
+        .ToList() );
 
     context.Add(order);
 }
@@ -120,4 +123,4 @@ Console.WriteLine(context.ChangeTracker.DebugView.LongView);
 context.SaveChanges();
 Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
 Console.WriteLine("-----");
-Console.WriteLine(context.ChangeTracker.DebugView.LongView);*/
+Console.WriteLine(context.ChangeTracker.DebugView.LongView);
