@@ -5,16 +5,22 @@ using Models;
 
 var contextOptions = new DbContextOptionsBuilder<Context>()
     .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true")
+    //Włączenie śledzenia zmian na podstawie proxy - wymaga specjalnego tworzenia obiektów (context.CreateProxy) i virtualizacji właściwości encji
+    .UseChangeTrackingProxies()
     //.LogTo(Console.WriteLine)
     .Options;
 
 var context = new Context(contextOptions);
 context.Database.EnsureDeleted();
 context.Database.EnsureCreated();
+context.ChangeTracker.AutoDetectChangesEnabled = false;
 
+/*var order = new Order();
+var product = new Product() { Name = "Sałata", Price = 15 };*/
 
-var order = new Order();
-var product = new Product() { Name = "Sałata", Price = 15 };
+var order = context.CreateProxy<Order>();
+var product = context.CreateProxy<Product> (x =>  { x.Name = "Sałata"; x.Price = 15; });
+
 
 order.Products.Add(product);
 
@@ -50,7 +56,7 @@ context.SaveChanges();
 Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
 Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
 
-//wyłączenie automatycznego wykrywania zmian
+/*//wyłączenie automatycznego wykrywania zmian
 //AutoDetectChanges działa w przypadku wywołania Entries, Local, SaveChanges
 context.ChangeTracker.AutoDetectChangesEnabled = false;
 
@@ -114,4 +120,4 @@ Console.WriteLine(context.ChangeTracker.DebugView.LongView);
 context.SaveChanges();
 Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
 Console.WriteLine("-----");
-Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+Console.WriteLine(context.ChangeTracker.DebugView.LongView);*/
