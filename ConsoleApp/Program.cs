@@ -1,6 +1,7 @@
 ﻿
 using DAL;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Models;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography.X509Certificates;
@@ -31,7 +32,10 @@ using (var context = new Context(contextOptions))
 
     using var transaction = context.Database.BeginTransaction();
 
-    for (int i = 0; i < orders.Count; i++)
+    //using (var context2 = new Context(contextOptions))
+    //    context2.Database.UseTransaction(transaction.GetDbTransaction());
+
+        for (int i = 0; i < orders.Count; i++)
     {
         string savepointName = i.ToString();
         transaction.CreateSavepoint(savepointName);
