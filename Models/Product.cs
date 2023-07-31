@@ -5,6 +5,8 @@ namespace Models
 {
     public class Product : Entity, ICloneable
     {
+        //public int Klucz { get; set; }
+
         private ILazyLoader _lazyLoader;
 
         public Product(ILazyLoader lazyLoader)

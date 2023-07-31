@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Security.Cryptography.X509Certificates;
 
 var contextOptions = new DbContextOptionsBuilder<Context>()
-    .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true")
+    .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true;Encrypt=False")
     //Włączenie śledzenia zmian na podstawie proxy - wymaga specjalnego tworzenia obiektów (context.CreateProxy) i virtualizacji właściwości encji
     //.UseChangeTrackingProxies()
 
@@ -18,8 +18,8 @@ var contextOptions = new DbContextOptionsBuilder<Context>()
 
 using (var context = new Context(contextOptions))
 {
-    context.Database.EnsureDeleted();
-    context.Database.EnsureCreated();
+    //context.Database.EnsureDeleted();
+    context.Database.Migrate();
 }
 
 Transactions(contextOptions, false);

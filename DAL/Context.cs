@@ -1,12 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Models;
+using Pluralize.NET.Core;
 
 namespace DAL
 {
     public class Context : DbContext
     {
+        public Context() { }
+
         public Context(DbContextOptions options) : base(options)
         {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if(!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer();
+            }
+
+            base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -15,7 +29,48 @@ namespace DAL
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
             //modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangedNotifications);
+
+            modelBuilder.Model.GetEntityTypes()
+                .SelectMany(x => x.GetProperties())
+                .Where(x => x.Name == "Klucz")
+                .ToList()
+                .ForEach(x =>
+                {
+                    x.IsNullable = false;
+                    x.DeclaringEntityType.SetPrimaryKey(x);
+                });
+
+            modelBuilder.Model.GetEntityTypes()
+                .ToList()
+                .ForEach(x =>
+                {
+                    x.SetTableName(new Pluralizer().Pluralize(x.GetDefaultTableName()));
+                });
+
+            modelBuilder.Model.GetEntityTypes()
+                .SelectMany(x => x.GetProperties())
+                .Where(x => x.PropertyInfo?.PropertyType == typeof(string))
+                .ToList()
+                .ForEach(x =>
+                {
+                    x.IsNullable = true;
+                    x.SetColumnName("s_" + x.GetDefaultColumnName());
+                });
+
         }
+
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureConventions(configurationBuilder);
+
+
+            configurationBuilder.Properties<DateTime>().HavePrecision(5);
+
+            //configurationBuilder.Conventions.Remove(typeof(KeyDiscoveryConvention));
+        }
+
+
 
         public bool RandomFail { get; set; }
 
