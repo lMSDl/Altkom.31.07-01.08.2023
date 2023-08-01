@@ -44,8 +44,15 @@ using (var context = new Context(contextOptions))
 
 }
 
+using (var context = new Context(contextOptions))
+{
 
-    static void ChangeTracker(Context context)
+    var product = context.Set<Product>().First();
+
+}
+
+
+static void ChangeTracker(Context context)
 {
     //context.ChangeTracker.AutoDetectChangesEnabled = false;
 

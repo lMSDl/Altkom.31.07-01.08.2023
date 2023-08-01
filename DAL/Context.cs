@@ -79,6 +79,8 @@ namespace DAL
                 .HasMin(0)
                 .IsCyclic()
                 .IncrementsBy(333);
+
+            modelBuilder.UsePropertyAccessMode(PropertyAccessMode.PreferField);
         }
 
 
