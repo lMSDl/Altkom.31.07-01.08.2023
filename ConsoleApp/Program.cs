@@ -20,178 +20,210 @@ using (var context = new Context(contextOptions))
     context.Database.Migrate();
 }
 
-Transactions(contextOptions, false);
+//Transactions(contextOptions, false);
 
 
 using (var context = new Context(contextOptions))
 {
-    var product = context.Set<Product>().First();
+    var product = context.Set<Product>().OrderBy(x => x.Id).First();
 
-    product.IsDeleted = true;
+    product.Name = "samochodzik";
+    context.SaveChanges();
+}
 
+Thread.Sleep(5000);
+
+using (var context = new Context(contextOptions))
+{
+    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+
+    product.Name = "samolocik";
+    context.SaveChanges();
+}
+
+Thread.Sleep(5000);
+
+using (var context = new Context(contextOptions))
+{
+    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+
+    product.Name = "";
+    context.SaveChanges();
+}
+
+Thread.Sleep(5000);
+
+using (var context = new Context(contextOptions))
+{
+    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    context.Remove(product);
     context.SaveChanges();
 }
 
 using (var context = new Context(contextOptions))
 {
-    var product1 = context.Set<Product>()/*.IgnoreQueryFilters()*/.First();
-    //var product2 = context.Set<Product>().Where(x => !x.IsDeleted).First();
+    var products = context.Set<Product>().TemporalAll().ToList();
 
-    context.Entry(product1.Order).Collection(x => x.Products).Load();
+    var product1 = context.Set<Product>().TemporalAsOf(DateTime.UtcNow.AddSeconds(-11)).OrderBy(x => x.Id).First();
+    var product2 = context.Set<Product>().TemporalAsOf(DateTime.UtcNow.AddSeconds(-6)).OrderBy(x => x.Id).First();
+
+
+    var order = context.Set<Order>().TemporalAsOf(DateTime.UtcNow.AddSeconds(-11)).Include(x => x.Products).First();
+
+    var data = context.Set<Product>().TemporalAll().Select(x => new { x, FROM = EF.Property<DateTime>(x, "From"), To = EF.Property<DateTime>(x, "To") }).ToList();
 }
 
 
-
-static void ChangeTracker(Context context)
-{
-    //context.ChangeTracker.AutoDetectChangesEnabled = false;
-
-    var order = new Order();
-    var product = new Product() { Name = "Sałata", Price = 15 };
-
-    /*var order = context.CreateProxy<Order>();
-    var product = context.CreateProxy<Product> (x =>  { x.Name = "Sałata"; x.Price = 15; });*/
-
-
-    order.Products.Add(product);
-
-
-    Console.WriteLine("Order przed dodaniem do kontekstu: " + context.Entry(order).State);
-    Console.WriteLine("Product przed dodaniem do kontekstu: " + context.Entry(product).State);
-
-    //context.Add(order);
-    context.Attach(order);
-
-    Console.WriteLine("Order po dodaniu do kontekstu: " + context.Entry(order).State);
-    Console.WriteLine("Product po dodaniu do kontekstu: " + context.Entry(product).State);
-
-    context.SaveChanges();
-
-    Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
-    Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
-
-    context.Entry(order).State = EntityState.Detached;
-    order.DateTime = DateTime.Now;
-    context.Entry(order).Property(x => x.DateTime).IsModified = true;
-    context.Attach(order);
-
-
-    Console.WriteLine("Order po zmianie daty: " + context.Entry(order).State);
-    Console.WriteLine("Order DateTime zmodywikowany? " + context.Entry(order).Property(x => x.DateTime).IsModified);
-    Console.WriteLine("Order Products zmodywikowany? " + context.Entry(order).Collection(x => x.Products).IsModified);
-
-    Console.WriteLine("Product po zmianie daty: " + context.Entry(product).State);
-
-    context.Remove(product);
-
-    Console.WriteLine("Order po usunięciu produktu: " + context.Entry(order).State);
-    Console.WriteLine("Product po usunięciu produktu: " + context.Entry(product).State);
-
-    context.Entry(product).State = EntityState.Unchanged;
-
-    context.SaveChanges();
-
-    Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
-    Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
-
-    //wyłączenie automatycznego wykrywania zmian
-    //AutoDetectChanges działa w przypadku wywołania Entries, Local, SaveChanges
-    context.ChangeTracker.AutoDetectChangesEnabled = false;
-
-    order = new Order();
-    product = new Product() { Name = "Kapusta", Price = 10 };
-    order.Products.Add(product);
-    product = new Product() { Name = "Masło", Price = 11 };
-    order.Products.Add(product);
-
-
-    Console.WriteLine("Przed dodaniem do kontekstu");
-    Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
-
-    context.Add(order);
-
-    Console.WriteLine("Po dodaniu do kontekstu");
-    Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-
-    context.SaveChanges();
-
-    Console.WriteLine("Po zapisie");
-    Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
-
-    order.DateTime = DateTime.Now;
-
-    Console.WriteLine("Po modyfikacji daty");
-
-    //_  = context.Set<Order>().Local;
-    //context.Entry(order);
-    //context.ChangeTracker.DetectChanges();
-    context.Entry(order).Property(x => x.DateTime).IsModified = true;
-    Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-
-    context.Remove(product);
-
-    Console.WriteLine("Po usunięciu produktu");
-    Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
-
-    context.SaveChanges();
-
-    Console.WriteLine("Po zapisie");
-    Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
-
-
-    context.ChangeTracker.AutoDetectChangesEnabled = true;
-
-    for (int i = 0; i < 3; i++)
+    static void ChangeTracker(Context context)
     {
-        order = new Order() { DateTime = DateTime.Now.AddMinutes(-i * 64) };
-        order.Products = new ObservableCollection<Product>(Enumerable.Range(1, new Random(i).Next(2, 10))
-            .Select(x => new Product { Name = x.ToString(), Price = x * 0.32f })
-            .ToList());
+        //context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var order = new Order();
+        var product = new Product() { Name = "Sałata", Price = 15 };
+
+        /*var order = context.CreateProxy<Order>();
+        var product = context.CreateProxy<Product> (x =>  { x.Name = "Sałata"; x.Price = 15; });*/
+
+
+        order.Products.Add(product);
+
+
+        Console.WriteLine("Order przed dodaniem do kontekstu: " + context.Entry(order).State);
+        Console.WriteLine("Product przed dodaniem do kontekstu: " + context.Entry(product).State);
+
+        //context.Add(order);
+        context.Attach(order);
+
+        Console.WriteLine("Order po dodaniu do kontekstu: " + context.Entry(order).State);
+        Console.WriteLine("Product po dodaniu do kontekstu: " + context.Entry(product).State);
+
+        context.SaveChanges();
+
+        Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
+        Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
+
+        context.Entry(order).State = EntityState.Detached;
+        order.DateTime = DateTime.Now;
+        context.Entry(order).Property(x => x.DateTime).IsModified = true;
+        context.Attach(order);
+
+
+        Console.WriteLine("Order po zmianie daty: " + context.Entry(order).State);
+        Console.WriteLine("Order DateTime zmodywikowany? " + context.Entry(order).Property(x => x.DateTime).IsModified);
+        Console.WriteLine("Order Products zmodywikowany? " + context.Entry(order).Collection(x => x.Products).IsModified);
+
+        Console.WriteLine("Product po zmianie daty: " + context.Entry(product).State);
+
+        context.Remove(product);
+
+        Console.WriteLine("Order po usunięciu produktu: " + context.Entry(order).State);
+        Console.WriteLine("Product po usunięciu produktu: " + context.Entry(product).State);
+
+        context.Entry(product).State = EntityState.Unchanged;
+
+        context.SaveChanges();
+
+        Console.WriteLine("Order po zapisie: " + context.Entry(order).State);
+        Console.WriteLine("Product po zapisie: " + context.Entry(product).State);
+
+        //wyłączenie automatycznego wykrywania zmian
+        //AutoDetectChanges działa w przypadku wywołania Entries, Local, SaveChanges
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        order = new Order();
+        product = new Product() { Name = "Kapusta", Price = 10 };
+        order.Products.Add(product);
+        product = new Product() { Name = "Masło", Price = 11 };
+        order.Products.Add(product);
+
+
+        Console.WriteLine("Przed dodaniem do kontekstu");
+        Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
 
         context.Add(order);
-    }
 
-    context.ChangeTracker.DetectChanges();
-    Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
-    Console.WriteLine("-----");
-    Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-    context.SaveChanges();
-    Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
-    Console.WriteLine("-----");
-    Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+        Console.WriteLine("Po dodaniu do kontekstu");
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+        context.SaveChanges();
+
+        Console.WriteLine("Po zapisie");
+        Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
+
+        order.DateTime = DateTime.Now;
+
+        Console.WriteLine("Po modyfikacji daty");
+
+        //_  = context.Set<Order>().Local;
+        //context.Entry(order);
+        //context.ChangeTracker.DetectChanges();
+        context.Entry(order).Property(x => x.DateTime).IsModified = true;
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+        context.Remove(product);
+
+        Console.WriteLine("Po usunięciu produktu");
+        Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
+
+        context.SaveChanges();
+
+        Console.WriteLine("Po zapisie");
+        Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
+
+
+        context.ChangeTracker.AutoDetectChangesEnabled = true;
+
+        for (int i = 0; i < 3; i++)
+        {
+            order = new Order() { DateTime = DateTime.Now.AddMinutes(-i * 64) };
+            order.Products = new ObservableCollection<Product>(Enumerable.Range(1, new Random(i).Next(2, 10))
+                .Select(x => new Product { Name = x.ToString(), Price = x * 0.32f })
+                .ToList());
+
+            context.Add(order);
+        }
+
+        context.ChangeTracker.DetectChanges();
+        Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
+        Console.WriteLine("-----");
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+        context.SaveChanges();
+        Console.WriteLine(context.ChangeTracker.DebugView.ShortView);
+        Console.WriteLine("-----");
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
 
 
 
-    context.ChangeTracker.Clear();
+        context.ChangeTracker.Clear();
 
 
-    var products = new List<Product>()
+        var products = new List<Product>()
 {
     new Product() { Name = "P1", Order = new Order { Id = 60, DateTime = DateTime.Now } },
     new Product() { Name = "P2", Order = new Order { } }
 };
 
-    //context.AttachRange(products);
+        //context.AttachRange(products);
 
-    foreach (var p in products)
-    {
-        context.ChangeTracker.TrackGraph(p, entityEntry =>
+        foreach (var p in products)
         {
-            if (entityEntry.Entry.IsKeySet)
+            context.ChangeTracker.TrackGraph(p, entityEntry =>
             {
-                entityEntry.Entry.State = EntityState.Modified;
-            }
-            else
-                entityEntry.Entry.State = EntityState.Added;
+                if (entityEntry.Entry.IsKeySet)
+                {
+                    entityEntry.Entry.State = EntityState.Modified;
+                }
+                else
+                    entityEntry.Entry.State = EntityState.Added;
 
-            entityEntry.Entry.Properties.Where(x => x.Metadata.ClrType == typeof(DateTime)).ToList().ForEach(x => x.IsModified = false);
-        });
+                entityEntry.Entry.Properties.Where(x => x.Metadata.ClrType == typeof(DateTime)).ToList().ForEach(x => x.IsModified = false);
+            });
+        }
+
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+        Console.ReadLine();
     }
-
-    Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-
-    Console.ReadLine();
-}
 
 static void ConcurrencyToken(Context context)
 {
@@ -327,4 +359,24 @@ static void DataLoading(DbContextOptions<Context> contextOptions)
 
     }
     Console.ReadLine();
+}
+
+static void QueryFilters(DbContextOptions<Context> contextOptions)
+{
+    using (var context = new Context(contextOptions))
+    {
+        var product = context.Set<Product>().First();
+
+        product.IsDeleted = true;
+
+        context.SaveChanges();
+    }
+
+    using (var context = new Context(contextOptions))
+    {
+        var product1 = context.Set<Product>()/*.IgnoreQueryFilters()*/.First();
+        //var product2 = context.Set<Product>().Where(x => !x.IsDeleted).First();
+
+        context.Entry(product1.Order).Collection(x => x.Products).Load();
+    }
 }
