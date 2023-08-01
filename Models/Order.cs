@@ -24,8 +24,11 @@ namespace Models
             }
         }
 
-        public string Number { get; set; }
+        public string Number { get; }
         public string Description { get; }
+        public OrderType OrderType { get; set; }
         public virtual ICollection<Product> Products { get; set; } = new ObservableCollection<Product>();
+
+        public Roles Role { get; set; }
     }
 }

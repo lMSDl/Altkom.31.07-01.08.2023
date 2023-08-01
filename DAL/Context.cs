@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DAL.Converters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Models;
 using Pluralize.NET.Core;
@@ -68,6 +69,8 @@ namespace DAL
                 {
                     x.IsNullable = true;
                     x.SetColumnName("s_" + x.GetDefaultColumnName());
+                    if (x.PropertyInfo.CanWrite)
+                        x.SetValueConverter(new StringConverter());
                 });
 
             modelBuilder.HasSequence<int>("OrderNumber")
