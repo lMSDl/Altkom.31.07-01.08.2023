@@ -3,6 +3,7 @@ using DAL;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using System.Collections.ObjectModel;
+using System.Security.Cryptography.X509Certificates;
 
 var contextOptions = new DbContextOptionsBuilder<Context>()
     .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true;Encrypt=False")
@@ -25,7 +26,8 @@ using (var context = new Context(contextOptions))
 
 using (var context = new Context(contextOptions))
 {
-    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    //var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    var product = Context.GetFirstProduct(context);
 
     product.Name = "samochodzik";
     context.SaveChanges();
@@ -35,7 +37,8 @@ Thread.Sleep(5000);
 
 using (var context = new Context(contextOptions))
 {
-    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    //var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    var product = Context.GetFirstProduct(context);
 
     product.Name = "samolocik";
     context.SaveChanges();
@@ -45,7 +48,8 @@ Thread.Sleep(5000);
 
 using (var context = new Context(contextOptions))
 {
-    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    //var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    var product = Context.GetFirstProduct(context);
 
     product.Name = "";
     context.SaveChanges();
@@ -55,7 +59,8 @@ Thread.Sleep(5000);
 
 using (var context = new Context(contextOptions))
 {
-    var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    //var product = context.Set<Product>().OrderBy(x => x.Id).First();
+    var product = Context.GetFirstProduct(context);
     context.Remove(product);
     context.SaveChanges();
 }
@@ -67,14 +72,18 @@ using (var context = new Context(contextOptions))
     var product1 = context.Set<Product>().TemporalAsOf(DateTime.UtcNow.AddSeconds(-11)).OrderBy(x => x.Id).First();
     var product2 = context.Set<Product>().TemporalAsOf(DateTime.UtcNow.AddSeconds(-6)).OrderBy(x => x.Id).First();
 
-
-    var order = context.Set<Order>().TemporalAsOf(DateTime.UtcNow.AddSeconds(-11)).Include(x => x.Products).First();
-
     var data = context.Set<Product>().TemporalAll().Select(x => new { x, FROM = EF.Property<DateTime>(x, "From"), To = EF.Property<DateTime>(x, "To") }).ToList();
 }
 
 
-    static void ChangeTracker(Context context)
+using (var context = new Context(contextOptions))
+{
+    var orders = Context.GetOrdersByDateRange(context, DateTime.Now.AddDays(-1), DateTime.Now).ToList();
+}
+
+
+
+static void ChangeTracker(Context context)
     {
         //context.ChangeTracker.AutoDetectChangesEnabled = false;
 

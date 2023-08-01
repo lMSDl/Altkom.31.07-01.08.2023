@@ -13,6 +13,19 @@ namespace DAL
         {
         }
 
+
+        public static Func<Context, Product> GetFirstProduct { get; } =
+            EF.CompileQuery((Context context) => context.Set<Product>().OrderBy(x => x.Id).First());
+
+        public static Func<Context, DateTime, DateTime, IEnumerable<Order>> GetOrdersByDateRange { get; } =
+            EF.CompileQuery((Context context, DateTime from, DateTime to) =>
+                context.Set<Order>()
+            .AsNoTracking()
+            .Include(x => x.Products)
+            .Where(x => x.DateTime >= from)
+            .Where(x => x.DateTime <= to));
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if(!optionsBuilder.IsConfigured)
