@@ -21,7 +21,7 @@ using (var context = new Context(contextOptions))
     context.Database.Migrate();
 }
 
-//Transactions(contextOptions, false);
+Transactions(contextOptions, false);
 
 
 using (var context = new Context(contextOptions))

@@ -18,6 +18,7 @@ namespace DAL.Configurations
             builder.Property(x => x.DateTime).IsConcurrencyToken();
 
             builder.Property(x => x.Description).HasComputedColumnSql("'Data utworzenia zamówienia: ' + [s_Number]", stored: true);
+            builder.Property(x => x.Number).HasDefaultValueSql("STR(NEXT VALUE FOR OrderNumber)");
         }
     }
 }

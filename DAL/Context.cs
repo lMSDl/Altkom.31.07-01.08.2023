@@ -70,6 +70,12 @@ namespace DAL
                     x.SetColumnName("s_" + x.GetDefaultColumnName());
                 });
 
+            modelBuilder.HasSequence<int>("OrderNumber")
+                .StartsAt(100)
+                .HasMax(999)
+                .HasMin(0)
+                .IsCyclic()
+                .IncrementsBy(333);
         }
 
 
