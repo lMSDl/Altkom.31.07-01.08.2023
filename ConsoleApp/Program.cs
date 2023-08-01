@@ -38,7 +38,24 @@ for (int i = 0; i < 20; i++)
     }
 }
 
+
+
 using (var context = new Context(contextOptions))
+{
+    var order = new Order { Id = 1 };
+    context.Attach(order);
+
+    var product1 = new Product() { Name = "Kapusta ", Order = order };
+    var product2 = new Product() { Name = "Kapusta ", Order = order };
+    var product3 = new Product() { Name = "Kapusta ", Order = order };
+
+
+    context.AddRange(new[] { product3, product1, product2 });
+
+    context.SaveChanges();
+}
+
+    using (var context = new Context(contextOptions))
 {
 
     var order = context.Set<Order>().Where(x => x.Role.HasFlag(Roles.Read)).ToList();
@@ -55,6 +72,19 @@ using (var context = new Context(contextOptions))
     context.SaveChanges();
 
 }
+
+using (var context = new Context(contextOptions))
+{
+    var multiplier = "-1.1";
+    //var multiplier = "-1.1; DROP TABLE Products";
+    //context.Database.ExecuteSqlRaw("EXEC ChangePrice " + multiplier);
+
+    //context.Database.ExecuteSqlRaw("EXEC ChangePrice @p0", multiplier);
+    context.Database.ExecuteSqlInterpolated($"EXEC ChangePrice {multiplier}");
+
+    var result = context.Set<OrderSummary>().FromSqlRaw("EXEC OrderSummary @p0", 3);
+}
+
 
 
 static void ChangeTracker(Context context)
