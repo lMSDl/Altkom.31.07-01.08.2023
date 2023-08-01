@@ -31,6 +31,7 @@ for (int i = 0; i < 20; i++)
 
         var order = new Order() { OrderType = (OrderType)(i % 3), Role = (Roles)(i % 4) };
         var product = new Product() { Name = "Kapusta " + i };
+        product.Details = new ProductDetails { Weight = i, Height = i * i, Width = i * i * i };
         order.Products.Add(product);
         context.Add(order);
         context.SaveChanges();
@@ -48,7 +49,7 @@ using (var context = new Context(contextOptions))
 {
 
     var product = context.Set<Product>().First();
-    var products = context.Set<Product>().Where(x => EF.Property<int>(x, "OrderId") == 1).ToList();
+    var products = context.Set<Product>().Include(x => x.Details).Where(x => EF.Property<int>(x, "OrderId") == 1).ToList();
 
     context.Entry(product).Property<bool>("IsDeleted").CurrentValue = true;
     context.SaveChanges();

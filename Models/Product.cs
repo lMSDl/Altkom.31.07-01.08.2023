@@ -33,7 +33,6 @@ namespace Models
         public float Price { get; set; }
         //public virtual Order? Order { get; set; }
 
-       
 
         private Order _order;
 
@@ -47,5 +46,8 @@ namespace Models
         {
             return MemberwiseClone();
         }
+
+
+        public ProductDetails? Details { get; set; }
     }
 }

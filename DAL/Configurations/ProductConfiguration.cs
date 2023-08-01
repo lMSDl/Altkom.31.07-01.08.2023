@@ -15,11 +15,11 @@ namespace DAL.Configurations
         {
             base.Configure(builder);
 
-            builder.ToTable("Products", x => x.IsTemporal(xx =>
+            /*builder.ToTable("Products", x => x.IsTemporal(xx =>
             {
                 xx.HasPeriodEnd("To"); //domyślna nazwa PeriodEnd
                 xx.HasPeriodStart("From"); //domyślna nazwa PeriodStart
-            }));
+            }));*/
 
             builder.HasOne(x => x.Order).WithMany(x => x.Products).IsRequired();
             builder.Property(x => x.Timestamp).IsRowVersion();
@@ -30,6 +30,8 @@ namespace DAL.Configurations
             builder.Property(x => x.Name).HasField("zuzia");
 
             builder.Property(x => x.Description).IsSparse();
+
+            builder.HasOne(x => x.Details).WithOne().HasForeignKey<ProductDetails>(x => x.Id);
         }
     }
 }

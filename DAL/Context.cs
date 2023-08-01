@@ -58,7 +58,8 @@ namespace DAL
                 .ToList()
                 .ForEach(x =>
                 {
-                    x.SetTableName(new Pluralizer().Pluralize(x.GetDefaultTableName()));
+                    if (x.GetTableName() == x.GetDefaultTableName())
+                        x.SetTableName(new Pluralizer().Pluralize(x.GetDefaultTableName()));
                 });
 
             modelBuilder.Model.GetEntityTypes()
@@ -100,11 +101,12 @@ namespace DAL
 
         public override int SaveChanges()
         {
+            var dateTime = DateTime.Now;
             ChangeTracker.Entries<IModifiedDate>()
                 .Where(x => x.State == EntityState.Modified || x.State == EntityState.Added)
                 .Select(x => x.Entity)
                 .ToList()
-                .ForEach(x => x.ModifiedDate = DateTime.Now);
+                .ForEach(x => x.ModifiedDate = dateTime);
 
             if (RandomFail && new Random((int)DateTime.Now.Ticks).Next(1, 50) == 1)
                 throw new Exception();
