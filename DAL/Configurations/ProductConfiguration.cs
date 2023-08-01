@@ -28,6 +28,8 @@ namespace DAL.Configurations
             builder.Property(x => x.Price).HasDefaultValue(0.01);
 
             builder.Property(x => x.Name).HasField("zuzia");
+
+            builder.Property(x => x.Description).IsSparse();
         }
     }
 }
