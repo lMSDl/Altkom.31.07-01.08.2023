@@ -48,6 +48,10 @@ using (var context = new Context(contextOptions))
 {
 
     var product = context.Set<Product>().First();
+    var products = context.Set<Product>().Where(x => EF.Property<int>(x, "OrderId") == 1).ToList();
+
+    context.Entry(product).Property<bool>("IsDeleted").CurrentValue = true;
+    context.SaveChanges();
 
 }
 
@@ -345,7 +349,8 @@ static void QueryFilters(DbContextOptions<Context> contextOptions)
     {
         var product = context.Set<Product>().First();
 
-        product.IsDeleted = true;
+        //product.IsDeleted = true;
+        context.Entry(product).Property<bool>("IsDeleted").CurrentValue = true;
 
         context.SaveChanges();
     }

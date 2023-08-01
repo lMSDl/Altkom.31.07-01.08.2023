@@ -32,6 +32,8 @@ namespace Models
         public float Price { get; set; }
         //public virtual Order? Order { get; set; }
 
+       
+
         private Order _order;
 
         public Order? Order { get => _lazyLoader?.Load(this, ref _order) ?? _order; set => _order = value; }

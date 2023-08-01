@@ -7,7 +7,8 @@ namespace Models
     {
         public virtual int Id { get; set; }
 
-        public bool IsDeleted { get; set; }
+        //wykorzystujemy Shadow Property
+        //public bool IsDeleted { get; set; }
 
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate {get; set;}
