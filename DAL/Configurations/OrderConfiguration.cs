@@ -16,6 +16,8 @@ namespace DAL.Configurations
             base.Configure(builder);
 
             builder.Property(x => x.DateTime).IsConcurrencyToken();
+
+            builder.Property(x => x.Description).HasComputedColumnSql("'Data utworzenia zamówienia: ' + [s_Number]", stored: true);
         }
     }
 }

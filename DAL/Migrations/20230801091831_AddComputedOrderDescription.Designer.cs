@@ -4,6 +4,7 @@ using DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20230801091831_AddComputedOrderDescription")]
+    partial class AddComputedOrderDescription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,7 +48,7 @@ namespace DAL.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("s_Description")
-                        .HasComputedColumnSql("'Data utworzenia zamówienia: ' + [s_Number]", true);
+                        .HasComputedColumnSql("'Data utworzenia zamówienia: ' + Cast([DateTime] as varchar(250))");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -53,10 +56,6 @@ namespace DAL.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasPrecision(5)
                         .HasColumnType("datetime2(5)");
-
-                    b.Property<string>("Number")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("s_Number");
 
                     b.HasKey("Id");
 
