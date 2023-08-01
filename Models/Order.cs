@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetTopologySuite.Geometries;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -30,5 +31,7 @@ namespace Models
         public virtual ICollection<Product> Products { get; set; } = new ObservableCollection<Product>();
 
         public Roles Role { get; set; }
+
+        public Point? DeliveryPoint { get; set; }
     }
 }
