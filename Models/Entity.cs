@@ -9,6 +9,7 @@ namespace Models
 
         public bool IsDeleted { get; set; }
 
+        public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate {get; set;}
 
         public event PropertyChangedEventHandler? PropertyChanged;

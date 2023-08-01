@@ -23,6 +23,9 @@ namespace DAL.Configurations
 
             builder.HasOne(x => x.Order).WithMany(x => x.Products).IsRequired();
             builder.Property(x => x.Timestamp).IsRowVersion();
+
+
+            builder.Property(x => x.Price).HasDefaultValue(0.01);
         }
     }
 }
