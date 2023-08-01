@@ -9,13 +9,11 @@ using System.Threading.Tasks;
 
 namespace DAL.Configurations
 {
-    internal class OrderConfiguration : EntityConfiguration<Order>
+    internal abstract class EntityConfiguration<T> : IEntityTypeConfiguration<T> where T : Entity
     {
-        public override void Configure(EntityTypeBuilder<Order> builder)
+        public virtual void Configure(EntityTypeBuilder<T> builder)
         {
-            base.Configure(builder);
-
-            builder.Property(x => x.DateTime).IsConcurrencyToken();
+            builder.HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

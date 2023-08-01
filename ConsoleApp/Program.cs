@@ -1,10 +1,8 @@
 ﻿
 using DAL;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Models;
 using System.Collections.ObjectModel;
-using System.Security.Cryptography.X509Certificates;
 
 var contextOptions = new DbContextOptionsBuilder<Context>()
     .UseSqlServer(@"Server=(local)\SQLEXPRESS;Database=EFCore;Integrated security=true;Encrypt=False")
@@ -24,40 +22,27 @@ using (var context = new Context(contextOptions))
 
 Transactions(contextOptions, false);
 
-Product product;
 
 using (var context = new Context(contextOptions))
 {
-    //Eager Loading
-    product = context.Set<Product>().Include(x => x.Order).ThenInclude(x => x.Products).First();
+    var product = context.Set<Product>().First();
+
+    product.IsDeleted = true;
+
+    context.SaveChanges();
 }
 
 using (var context = new Context(contextOptions))
 {
-    product = context.Set<Product>().First();
-    //Explicit Loading
-    context.Entry(product).Reference(x => x.Order).Load();
-    context.Entry(product.Order).Collection(x => x.Products).Load();
+    var product1 = context.Set<Product>()/*.IgnoreQueryFilters()*/.First();
+    //var product2 = context.Set<Product>().Where(x => !x.IsDeleted).First();
 
-    //context.Set<Order>().Load();
-    //context.Set<Product>().Load();
+    context.Entry(product1.Order).Collection(x => x.Products).Load();
 }
 
-using (var context = new Context(contextOptions))
-{
-    //Lazy Loading
-    product = context.Set<Product>().First();
-
-}
-
-    Console.ReadLine();
 
 
-
-
-
-
-    static void ChangeTracker(Context context)
+static void ChangeTracker(Context context)
 {
     //context.ChangeTracker.AutoDetectChangesEnabled = false;
 
@@ -309,4 +294,37 @@ static void Transactions(DbContextOptions<Context> contextOptions, bool randomFa
 
         transaction.Commit();
     }
+}
+
+static void DataLoading(DbContextOptions<Context> contextOptions)
+{
+    Transactions(contextOptions, false);
+
+    Product product;
+
+    using (var context = new Context(contextOptions))
+    {
+        //Eager Loading
+        product = context.Set<Product>().Include(x => x.Order).ThenInclude(x => x.Products).First();
+    }
+
+    using (var context = new Context(contextOptions))
+    {
+        product = context.Set<Product>().First();
+        //Explicit Loading
+        context.Entry(product).Reference(x => x.Order).Load();
+        context.Entry(product.Order).Collection(x => x.Products).Load();
+
+        //context.Set<Order>().Load();
+        //context.Set<Product>().Load();
+    }
+
+    using (var context = new Context(contextOptions))
+    {
+        //Lazy Loading
+        product = context.Set<Product>().First();
+
+
+    }
+    Console.ReadLine();
 }
